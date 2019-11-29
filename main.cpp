@@ -1,4 +1,5 @@
 #include <iostream>
+#include <list>
 
 using namespace std;
 
@@ -23,6 +24,18 @@ public:
 
     ~Motorista();
 
+    string getUser();
+
+    string getNome();
+
+    double getValorCorridas();
+
+    void adicionarValorCorridas(double valor);
+
+    float estrelas();
+
+    void adicionarAvaliacao(int valor);
+
 private:
     string nome;
     string user;
@@ -35,6 +48,9 @@ private:
     string placa;
     int litros;
     string categoria;
+    double valorCorridas;
+    int totalEstrelas;
+    int totalAvaliacao;
 };
 
 Motorista::Motorista(
@@ -58,12 +74,38 @@ Motorista::Motorista(
         ano(ano),
         placa(placa),
         litros(litros),
-        categoria(categoria) {
+        categoria(categoria),
+        valorCorridas(0.0) {
 
 }
 
 Motorista::~Motorista() {
 
+}
+
+string Motorista::getUser() {
+    return user;
+}
+
+string Motorista::getNome() {
+    return nome;
+}
+
+double Motorista::getValorCorridas() {
+    return valorCorridas;
+}
+
+void Motorista::adicionarValorCorridas(double valor) {
+    valorCorridas += valor;
+}
+
+float Motorista::estrelas() {
+    return totalEstrelas / totalAvaliacao;
+}
+
+void Motorista::adicionarAvaliacao(int valor) {
+    totalEstrelas += valor;
+    totalAvaliacao++;
 }
 
 // -------------------------------------
@@ -75,19 +117,32 @@ public:
 
     ~Usuario();
 
+    void pagarCorrida(double valor);
+    double getValorTotalPago();
 private:
     string nome;
     string usuario;
     string senha;
+    double valorTotalPago;
 };
 
 Usuario::Usuario(const string &nome, const string &usuario, const string &senha) :
-        nome(nome), usuario(usuario), senha(senha) {
+        nome(nome), usuario(usuario), senha(senha), valorTotalPago(0.0) {
 
 }
 
 Usuario::~Usuario() {
 
+}
+
+void Usuario::pagarCorrida(double valor)
+{
+    valorTotalPago += valor;
+}
+
+double Usuario::getValorTotalPago()
+{
+    return valorTotalPago;
 }
 
 // -------------------------------------
@@ -155,7 +210,7 @@ double Mapa::distancia(int origem, int destino) const {
 // -------------------------------------
 class Corrida {
 public:
-    Corrida(const Mapa& mapa, const Usuario &usuario, const Motorista &motorista, int origem, int destino);
+    Corrida(const Mapa &mapa, const Usuario &usuario, const Motorista &motorista, int origem, int destino);
 
     ~Corrida();
 
@@ -169,7 +224,7 @@ private:
     int destino;
 };
 
-Corrida::Corrida(const Mapa& mapa, const Usuario &usuario, const Motorista &motorista, int origem, int destino) :
+Corrida::Corrida(const Mapa &mapa, const Usuario &usuario, const Motorista &motorista, int origem, int destino) :
         mapa(mapa), usuario(usuario), motorista(motorista), origem(origem), destino(destino) {
 
 }
@@ -179,19 +234,513 @@ Corrida::~Corrida() {
 }
 
 double Corrida::calcularValor() const {
-    if (origem == 4 || origem == 9 || origem == 15 || origem == 17 || origem == 21 || origem == 22 || origem == 25 || origem == 28){
-        return mapa.distancia(origem, destino)*2.0;
+    if (origem == 4 || origem == 9 || origem == 15 || origem == 17 || origem == 21 || origem == 22 || origem == 25 ||
+        origem == 28) {
+        return mapa.distancia(origem, destino) * 2.0;
     }
 
-    if (origem == 7 || origem == 10 || origem == 11 || origem == 18 || origem == 20 || origem == 23){
-        return mapa.distancia(origem, destino)*1.9;
+    if (origem == 7 || origem == 10 || origem == 11 || origem == 18 || origem == 20 || origem == 23) {
+        return mapa.distancia(origem, destino) * 1.9;
     }
 
-    return mapa.distancia(origem, destino)*1.65;
+    return mapa.distancia(origem, destino) * 1.65;
 }
 
+//--------------------------------------
+// Uber
+//--------------------------------------
+
+class Uber {
+public:
+    Uber();
+
+    ~Uber();
+
+    void menuPrincipal();
+
+private:
+    void menuMotorista();
+
+    void cadastrarMotorista();
+
+    void menuUsuario();
+
+    void cadastrarUsuario();
+
+    bool opcaoMotoristaValida(int opcao);
+
+    void visualizarDinheiroMotorista();
+
+    void visualizarPontuacaoMotorista();
+
+    void visualizarStatusRankingMotorista();
+
+    void realizarCorrida();
+
+    void acessarRota();
+
+    void visualizarDinheiroUsuario();
+
+    list<Motorista> listaMotorista;
+    list<Usuario> listaUsuario;
+};
+
+void Uber::menuPrincipal() {
+    bool sair = false;
+    int opcaoSelecionada;
+
+    while (!sair) {
+        opcaoSelecionada = 0;
+
+        cout << "Selecione: " << endl;
+        cout << "1- Motorista Cadastrado" << endl;
+        cout << "2- Novo Motorista" << endl;
+        cout << "3- usuario Cadastrado" << endl;
+        cout << "4- Novo usuario" << endl;
+        cout << "5- Sair" << endl;
+        cin >> opcaoSelecionada;
+
+//        system("cls");
+
+        switch (opcaoSelecionada) {
+            case 1:
+                menuMotorista();
+                break;
+            case 2:
+                cadastrarMotorista();
+                break;
+            case 3:
+                menuUsuario();
+                break;
+            case 4:
+                cadastrarUsuario();
+                break;
+            case 5:
+                sair = true;
+                break;
+            default:
+                cerr << "Opcao invalida" << endl;
+        }
+    }
+}
+
+void Uber::menuMotorista() {
+    int opcaoSelecionada;
+    bool sair = false;
+
+    while (!sair) {
+        cout << "\nSelecione a opção desejada: " << endl;
+
+        cout << "1. Visualizar dinheiro já obtido. " << endl;
+        cout << "2. Ver minha pontuação. " << endl;
+        cout << "3. Status do ranking. " << endl;
+        cout << "4. Voltar " << endl;
+        cin >> opcaoSelecionada;
+
+        switch (opcaoSelecionada) {
+            case 1:
+                visualizarDinheiroMotorista();
+                break;
+            case 2:
+                visualizarPontuacaoMotorista();
+                break;
+            case 3:
+                visualizarStatusRankingMotorista();
+            case 4:
+                sair = true;
+                break;
+            default:
+                cerr << "Opcao invalida" << endl;
+        }
+    }
+}
+
+void Uber::cadastrarMotorista() {
+    string nome;
+    string user;
+    string senha;
+    string telefone;
+    string email;
+    string modelo;
+    float motor;
+    int ano;
+    string placa;
+    int litros;
+    string categoria;
+
+    cout << "SEU CADASTRO: " << endl << endl;
+    cout << "Nome: ";
+    //cin.ignore();
+    //getline(cin, nome);
+    cin >> nome;
+
+    cout << endl << "Telefone: ";
+    cin >> telefone;
+
+    cout << endl << "E-mail: ";
+    cin.ignore();
+    getline(cin, email);
+
+    cout << endl << "Qual será seu user: ";
+    getline(cin, user);
+
+    cout << endl << "Senha (mínimo 4 caracteres númericos): ";
+    cin >> senha;
+
+    cout << endl << endl << "SEU CARRO: " << endl;              //opcvip - opcpop -opclight
+
+    cout << "Modelo: ";
+    cin.ignore();
+    getline(cin, modelo);
+
+    cout << endl << "Motor: ";
+    cin >> motor;
+
+    cout << endl << "Ano: ";
+    cin >> ano;
+
+    cout << endl << "Placa: ";
+    cin >> placa;
+
+    cout << endl << "Capacidade do bagageiro: (em litros)";
+    cin >> litros;
+
+    cout << endl << endl << "SEU CARRO FOI SELECIONADO NA CATEGORIA: " << endl;
+
+    if (motor >= 1.8 && ano >= 2017) {
+        cout << "OpcVip" << endl;
+        categoria = "opcvip";
+    } else if (litros >= 400 && motor < 1.8) {
+        cout << "OpcPop" << endl;
+        categoria = "opcpop";
+    } else {
+        cout << "OpcLight" << endl;
+        categoria = "opclight";
+    }
+
+    Motorista motorista(nome, user, senha, telefone, email, modelo, motor, ano, placa, litros, categoria);
+    listaMotorista.push_front(motorista);
+}
+
+void Uber::menuUsuario() {
+    int opcao;
+    bool sair = false;
+
+    while (!sair) {
+        cout << "Selecione a opção desejada: "<< endl;
+
+        cout << "1. Realizar corrida. "  << endl;
+        cout << "2. Acessar rota." << endl;
+        cout << "3. Visualizar dinheiro já gasto. " << endl;
+        cout << "4. Voltar " << endl;
+        cin >> opcao;
+
+        switch (opcao) {
+            case 1:
+                realizarCorrida();
+                break;
+            case 2:
+                acessarRota();
+                break;
+            case 3:
+                visualizarDinheiroUsuario();
+                break;
+            case 4:
+                sair = true;
+                break;
+            default:
+                cout << "Opcao invalida" << endl;
+        }
+    }
+}
+
+void Uber::cadastrarUsuario() {
+    string nome;
+    string usuario;
+    string senha;
+
+    cout << "SEU CADASTRO: " << endl << endl;
+    cout << "Nome: ";
+    cin.ignore();
+    getline(cin, nome);
+
+    cout << endl << "Qual será seu user: ";
+    //	cin.ignore();
+    getline(cin, usuario);
+
+    cout << endl << "Senha (mínimo 4 caracteres númericos): ";
+    cin >> senha;
+
+    Usuario user(nome, usuario, senha);
+    listaUsuario.push_front(user);
+}
+
+void Uber::visualizarDinheiroMotorista() {
+    string user;
+    cout << "Confirme o seu user: ";
+    cin >> user;
+
+    cout << "Dinheiro já obtido com as viagens que já foram realizadas: " << endl;
+
+    for (list<Motorista>::iterator it = listaMotorista.begin(); it != listaMotorista.end(); it++) {
+        if ((*it).getUser() == user) {
+            cout << (*it).getNome() << ", valor já arrecadado: R$" << (*it).getValorCorridas() << endl;
+        }
+    }
+}
+
+void Uber::visualizarPontuacaoMotorista() {
+    string user;
+    cout << "Confirme o seu user: ";
+    cin >> user;
+
+    cout << "Sua pontuação: " << endl;
+
+    for (list<Motorista>::iterator it = listaMotorista.begin(); it != listaMotorista.end(); it++) {
+        if ((*it).getUser() == user) {
+            cout << (*it).getNome() << ", sua avaliacao atual: " << (*it).estrelas() << endl;
+        }
+    }
+
+    cout << endl;
+
+}
+
+void Uber::visualizarStatusRankingMotorista() {
+    cout << "[IMPLEMENTAR]" << endl;
+}
+
+Uber::Uber()
+{
+
+}
+
+Uber::~Uber()
+{
+
+}
+
+void Uber::realizarCorrida()
+{
+    /*
+    string nome_moto_aux;
+    int cont_pos;
+    double preco_aux_oficial;
+    double preco_aux;
+    cont_pos = 0;
+
+    viagem:
+    cout << "\tVAMOS INICIAR A CORRIDA: " << endl << endl;
+    cout << "Para realizar a viagem você deve escolher o local de PARTIDA e de CHEGADA. " << endl << endl << endl;
+    cout << "1. Asa sul \t         2. Asa Norte \t               3. Águas Claras " << endl;
+    cout << "4. Brazlândia \t         5.Candangolândia \t       6.Guará "<< endl;
+    cout << "7.Ceilândia \t         8.Cruzeiro \t               9.Fercal \t"<< endl;
+    cout << "10.Gama \t         11.Itapoã  \t               12.Lago Norte \t"<< endl;
+    cout << "13.Lago Sul \t         14.Nucleo Bandeirante \t       15.Paranoá \t"<< endl;
+    cout << "16. Park Way \t         17.Planaltina \t               18.Recanto das Emas \t"<< endl;
+    cout << "19. Riacho Fundo \t 20.Samambaia \t               21. Santa Maria \t"<< endl;
+    cout << "22.São Sebastião \t 23.SCIA(Cidade Estrutural)\t24.SIA \t"<< endl;
+    cout << "25.Sobradinho \t         26.Sudoeste \t               27.Taguatinga \t"<< endl;
+    cout << "28.Varjão \t         29.Vicente Pires \t       30.Jardim Botânico  \t"<< endl;
+
+    cout << endl;
+    cout << "Opcional: Você deseja realizar alguma parada antes de seu destino final? (s/n)" << endl;
+    cin >> op_parada;
+
+    cout << endl;
+
+    //	motorista_viagem();
+
+    nome_moto_aux =motorista_viagem(); //igualando o nome escolhido a uma variavel
+
+    cout << endl;
+
+    if(op_parada == 's' || op_parada == 'S'){
+        while(lugar_origem>30 || lugar_origem<1 ||lugar_destino>30 || lugar_destino<1){ // while de verificação
+            cout << "Digite o número correspondente ao local de parada: " << endl;
+            cin >> parada;
+            cout << " \n\nCidade de PARTIDA: " << endl;
+            cin >> lugar_origem;
+            cout << " Cidade de DESTINO: " << endl;
+            cin >> lugar_destino;
+        }
+        cout << "Quilômetros a serem percorridos: " << (quilometragem[lugar_origem][parada]) + (quilometragem[parada][lugar_destino]) << endl;
+        cout << "Valor da viagem: R$ " << valor_parada(lugar_origem, lugar_destino, parada)  << endl;
+        cout << "Motorista ";
+
+
+        preco_aux = valor_parada(lugar_origem, lugar_destino, parada);
+        it_modelo = motorista_modelo.begin();
+        it_placa = motorista_placa.begin();
+        it_cr_preco = motorista_cr_preco.begin();
+
+        for(it_user= motorista_user.begin() ; it_user!= motorista_user.end() ; it_user++){
+            if(nome_moto_aux== *it_user){
+                cout << *it_user << endl;
+                cout << "Modelo = " << *it_modelo << endl;
+                cout << "Placa: " << *it_placa << endl;
+
+                preco_aux += *it_cr_preco;
+
+                motorista_cr_preco.insert(it_cr_preco, preco_aux);
+            }
+            it_modelo++;
+            it_placa++;
+            cont_pos++;
+            it_cr_preco++;
+        }
+
+
+
+        string nome_user_aux;					//pra add o dinehro gasto do usuario
+        cout << "Confirme nome de usuário : " << endl;
+        cin >> nome_user_aux;
+        it_cr_preco = usuario_cr_preco.begin();
+        for(it_user= usuario_user.begin() ; it_user!= usuario_user.end() ; it_user++){
+            if(nome_user_aux== *it_user){
+                usuario_cr_preco.insert(it_cr_preco, preco_aux);
+            }
+            it_cr_preco++;
+        }
+
+
+
+        //	motorista_viagem();
+    }
+
+
+
+
+    if(op_parada == 'n' || op_parada == 'N'){
+        cont_pos = 0;
+        preco_aux=0;
+
+        while(lugar_origem>30 || lugar_origem<1 ||lugar_destino>30 || lugar_destino<1){ // while de verificação
+            cout << " \n\nPRIMEIRO escolha a cidade de PARTIDA: " << endl;
+            cin >> lugar_origem;
+            cout << " AGORA escolha a cidade de DESTINO: " << endl;
+            cin >> lugar_destino;
+        }
+
+        cout << "Quilômetros a serem percorridos: " << quilometragem[lugar_origem][lugar_destino] << endl;
+        quilometragem[lugar_origem][lugar_destino] = km;
+        km_us.push_front(km);
+        cout << "Valor da viagem: R$"  << valor_rota(lugar_origem,lugar_destino) << endl;
+        cout << "Motorista: ";
+
+
+        preco_aux = valor_rota(lugar_origem, lugar_destino);
+
+        it_modelo = motorista_modelo.begin();
+        it_placa = motorista_placa.begin();
+        it_cr_preco = motorista_cr_preco.begin();
+        for(it_user= motorista_user.begin() ; it_user!= motorista_user.end() ; it_user++){
+            if(nome_moto_aux== *it_user){
+                cout << *it_user << endl;
+                cout << "Modelo = " << *it_modelo << endl;
+                cout << "Placa: " << *it_placa << endl;
+
+                preco_aux += *it_cr_preco;
+                motorista_cr_preco.insert(it_cr_preco, preco_aux);
+
+            }
+            it_modelo++;
+            it_placa++;
+            cont_pos++;
+            it_cr_preco++;
+        }
+
+
+
+        string nome_user_aux;					//pra add o dinehro gasto do usuario
+        cout << "Confirme nome de usuário : " << endl;
+        cin >> nome_user_aux;
+        it_cr_preco = usuario_cr_preco.begin();
+        for(it_user= usuario_user.begin() ; it_user!= usuario_user.end() ; it_user++){
+            if(nome_user_aux== *it_user){
+                usuario_cr_preco.insert(it_cr_preco, preco_aux);
+            }
+            it_cr_preco++;
+        }
+
+
+
+
+        for(it_user= usuario_user.begin() ; it_user!= usuario_user.end() ; it_user++){
+            if(nome_user_aux== *it_user){
+                motorista_cr_preco.insert(it_cr_preco, preco_aux);
+            }
+            it_cr_preco++;
+        }
+    }
+
+
+
+
+    cout << endl << endl;
+
+    cout << "Confirmar viagem? (s/n)" << endl;
+    cin >> op_viagem;
+
+
+
+
+
+    if(op_viagem == 'S' || op_viagem == 's'){
+        time(&t); //para mostrar dia e hora atual
+        cout << "Viagem solicitada em : ";
+        cout << ctime(&t) << endl << endl;
+        cout << "Seu motorista está indo até você! " << endl;
+
+        tempo();
+        cout << "Seu motorista chegou. Fique no lugar de encontro!" << endl << endl;
+    }
+    else {
+        goto viagem;
+    }
+
+    cout << "Iniciar viagem! " << endl;
+    tempo();
+
+    cout << "Finalizar viagem!" << endl;
+    cout << "Avalie seu motorista (1 a 5 estrelas): " << endl;
+    cin >> estrelas;
+
+    for(it_user= motorista_user.begin() ; it_user!= motorista_user.end() ; it_user++){
+        if(nome_moto_aux== *it_user){
+            estrelas_moto.insert(estrelas);	//armazenei as estrelas correspondente a cada motorista numa arvore
+        }
+    }
+
+    while(estrelas <1 || estrelas>5){
+        cout << "Opção não valida. Digite novamente:" << endl;
+        cin >> estrelas;
+        for(it_user= motorista_user.begin() ; it_user!= motorista_user.end() ; it_user++){
+            if(nome_moto_aux== *it_user){
+                estrelas_moto.insert(estrelas);	 //armazenei as estrelas correspondente a cada motorista numa arvore
+            }
+        }
+    }
+    cout << endl;
+    cout << "Avaliação Motorista: " << estrelas << "estrelas " << endl;
+     */
+}
+
+void Uber::acessarRota()
+{
+
+}
+
+void Uber::visualizarDinheiroUsuario()
+{
+
+}
 
 int main() {
-    std::cout << "Hello, World!" << std::endl;
-    return 0;
+    cout << "Uber" << endl;
+
+    Uber user;
+    user.menuPrincipal();
+
+    return EXIT_SUCCESS;
 }
